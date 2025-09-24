@@ -105,12 +105,12 @@ export default {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin: 12px 0;
+  margin: 50px 0;
 }
 
 /* 输入框整体 */
 .search-input {
-  width: 60vw;
+  width: 45vw;
   height: 40px;
   font-size: 14px;
   transition: box-shadow 0.3s, border-color 0.3s;

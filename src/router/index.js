@@ -1,30 +1,40 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import About from '../views/About.vue'
-import Setting from '../views/Setting.vue'
+import Login from '../views/Login.vue'  // 导入登录页
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-      path: '/',
-      name: 'Home',
-      component: Home,
-      meta: { title: '个人收藏' }
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: About,
-      meta: { title: '关于' }
-    },
-    {
-      path: '/settings',
-      name: 'Settings',
-      component: Setting,
-      meta: { title: '设置' }
+    path: '/',
+    name: 'Home',
+    component: Home,
+    meta: { title: '个人收藏' },
+    beforeEnter: (to, from, next) => {
+      const isLoggedIn = localStorage.getItem('loggedIn');
+      if (!isLoggedIn) {
+        next({ name: 'Login' });
+      } else {
+        next();
+      }
     }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { title: '登录' },
+    beforeEnter: (to, from, next) => {
+      const isLoggedIn = localStorage.getItem('loggedIn');
+      // 如果已经登录，跳转到首页
+      if (isLoggedIn) {
+        next({ name: 'Home' });
+      } else {
+        next();
+      }
+    }
+  }
 ]
 
 const router = new VueRouter({

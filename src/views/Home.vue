@@ -1,22 +1,7 @@
 <template>
   <div class="home">
-    <!-- 间隔 12px -->
-    <div style="height: 12px"></div>
-
-    <!-- Banner 轮播图 -->
-    <el-carousel
-      :interval="30 * 1000"
-      trigger="click"
-      arrow="never"
-      indicator-position="none"
-      class="banner-carousel"
-    >
-      <el-carousel-item v-for="(img, index) in banners" :key="index">
-        <div class="banner-img-wrapper">
-          <img :src="img" class="banner-img" />
-        </div>
-      </el-carousel-item>
-    </el-carousel>
+    <!-- 背景图片 -->
+    <BackgroundImage :bgImageUrl="bgImageUrl" />
 
     <!-- 搜索框 -->
     <div class="search-wrapper">
@@ -42,55 +27,48 @@
     </div>
 
     <!-- 分类内容 -->
-    <transition name="fade" mode="out-in">
-      <div v-if="marks[activeCategory]" :key="activeCategory" class="marks-container">
-        <div class="group-grid">
-          <el-card
-            v-for="(sub, idx) in marks[activeCategory]"
-            :key="idx"
-            class="box-card"
-            shadow="hover"
-            ref="cards"
-          >
-            <div slot="header">{{ sub.category }}</div>
-            <div class="links-container">
-              <a
-                v-for="(link, i) in sub.links"
-                :key="i"
-                :href="link.url"
-                target="_blank"
-                class="link-item"
-              >
-                <span>{{ link.name }}</span>
-              </a>
-            </div>
-          </el-card>
-        </div>
+    <div v-if="marks[activeCategory]" :key="activeCategory" class="marks-container">
+      <div class="group-flex">
+        <el-card
+          v-for="(sub, idx) in marks[activeCategory]"
+          :key="idx"
+          class="box-card"
+          shadow="hover"
+        >
+          <div slot="header">{{ sub.category }}</div>
+          <div class="links-container">
+            <a
+              v-for="(link, i) in sub.links"
+              :key="i"
+              :href="link.url"
+              target="_blank"
+              class="link-item"
+            >
+              <span>{{ link.name }}</span>
+            </a>
+          </div>
+        </el-card>
       </div>
-    </transition>
+    </div>
   </div>
 </template>
 
 <script>
 import SearchBar from '@/components/SearchBar.vue'
+import BackgroundImage from '@/components/BackgroundImage.vue'
 
 export default {
   name: 'Home',
-  components: { SearchBar },
+  components: { SearchBar, BackgroundImage },
   data() {
     return {
-      banners: [
-        '/images/1.jpg',
-        '/images/2.jpg',
-        '/images/3.jpg',
-        '/images/4.jpg',
-        '/images/5.jpg'
-      ],
       categories: [],
       activeCategory: '',
       activeIndex: 0,
       marks: {},
-      sliderStyle: { width: '0px', left: '0px' }
+      sliderStyle: { width: '0px', left: '0px' },
+      // 默认背景图
+      bgImageUrl: '/images/bg.jpg' // 这里设置默认的背景图
     }
   },
   created() {
@@ -119,7 +97,6 @@ export default {
         .then(res => res.json())
         .then(data => {
           this.$set(this.marks, value, data)
-          this.$nextTick(() => this.alignCardHeights())
         })
     },
     moveSlider(index) {
@@ -135,22 +112,6 @@ export default {
     },
     resetSlider() {
       this.moveSlider(this.activeIndex)
-    },
-    alignCardHeights() {
-      let cards = this.$refs.cards
-      if (!cards) return
-      if (!Array.isArray(cards)) cards = [cards]
-      // 每行两列对齐
-      for (let i = 0; i < cards.length; i += 2) {
-        const card1 = cards[i] && cards[i].$el
-        const card2 = cards[i + 1] && cards[i + 1].$el
-        if (!card1 && !card2) continue
-        const h1 = card1 ? card1.offsetHeight : 0
-        const h2 = card2 ? card2.offsetHeight : 0
-        const maxH = Math.min(Math.max(h1, h2), 240)
-        if (card1) card1.style.minHeight = maxH + 'px'
-        if (card2) card2.style.minHeight = maxH + 'px'
-      }
     }
   }
 }
@@ -163,27 +124,9 @@ export default {
   font-size: 14px;
 }
 
-/* 轮播图 */
-.banner-carousel {
-  border-radius: 8px;
-  overflow: hidden;
-  height: auto !important;
-}
-.banner-img-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.banner-img {
-  width: 24vw;
-  height: auto;
-  display: block;
-  border-radius: 8px;
-}
-
 /* 搜索框 */
 .search-wrapper {
-  margin: 24px 0;
+  margin-top: 120px;
 }
 
 /* 分类 Tabs */
@@ -236,22 +179,30 @@ export default {
   flex-direction: column;
   gap: 25px;
 }
-.group-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25px;
+
+/* 使用 flex 保证不换行，所有卡片在一行展示 */
+.group-flex {
+  display: flex;
+  flex-wrap: nowrap; /* 禁止换行 */
+  gap: 25px; /* 卡片间的间距 */
+  justify-content: flex-start; /* 左对齐 */
+  overflow-x: auto; /* 超出时可以水平滚动 */
 }
+
 .box-card {
   font-size: 14px;
   padding-bottom: 12px;
-  max-height: 240px;
+  height: auto; /* 高度自适应 */
+  box-sizing: border-box;
+  flex-grow: 1; /* 让每个卡片宽度尽量占满 */
+  flex-basis: 0; /* 让所有卡片的宽度自动占满剩余空间 */
+  min-width: 0; /* 防止卡片过小 */
 }
 
 /* 链接容器 */
 .links-container {
   display: flex;
   flex-direction: column;
-  max-height: 240px;
   overflow-y: auto;
   gap: 8px;
 }
@@ -285,15 +236,5 @@ export default {
   bottom: 0;
   height: 1px;
   background: #d0d0d0;
-}
-
-/* fade 动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
